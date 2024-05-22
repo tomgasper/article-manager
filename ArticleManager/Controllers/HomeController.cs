@@ -15,6 +15,7 @@ namespace ArticleManager.Controllers
 
         public IActionResult Index()
         {
+            Debug.WriteLine($"HTML: hello");
             return View();
         }
 
