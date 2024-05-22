@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Markdig;
-
+﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using ArticleManager.Utils;
+using Ganss.Xss;
 
 namespace ArticleManager.TagHelpers
 {
@@ -18,16 +14,19 @@ namespace ArticleManager.TagHelpers
         {
             TagHelperContent tagContent = await output.GetChildContentAsync(NullHtmlEncoder.Default);
             string content = tagContent.GetContent(NullHtmlEncoder.Default);
-            // var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-
 
             if (string.IsNullOrEmpty(content)) return;
+
             char[] charsToTrim = { '\r', '\n' };
             content = content.Trim(charsToTrim);
-
             string markdown = MarkdownUtils.NormalizeWhiteSpaceText(content);
             string html = Markdig.Markdown.ToHtml(markdown);
-            output.Content.SetHtmlContent(html);
+
+            // Sanitize for safety
+            var sanitizer = new HtmlSanitizer();
+            var sanitized = sanitizer.Sanitize(html);
+
+            output.Content.SetHtmlContent(sanitized);
             output.TagName = null;
         }
     }
