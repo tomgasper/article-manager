@@ -19,7 +19,8 @@ namespace ArticleManager.TagHelpers
 
             char[] charsToTrim = { '\r', '\n' };
             content = content.Trim(charsToTrim);
-            string markdown = MarkdownUtils.NormalizeWhiteSpaceText(content);
+
+            string markdown = NormalizeWhitespace ? MarkdownUtils.NormalizeWhiteSpaceText(content) : content;
             string html = Markdig.Markdown.ToHtml(markdown);
 
             // Sanitize for safety

@@ -1,0 +1,31 @@
+﻿@model ArticleManager.Models.Article
+
+<h2>Edit Article</h2>
+<form asp-action="Edit" method="post">
+    <div class="form-group">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Author" class="control-label"></label>
+        <input asp-for="Author" class="form-control" />
+        <span asp-validation-for="Author" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ContentMarkdown" class="control-label"></label>
+        <textarea asp-for="ContentMarkdown" class="form-control" id="markdownEditor"></textarea>
+        <span asp-validation-for="ContentMarkdown" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+    <script>
+        var simplemde = new SimpleMDE({ element: document.getElementById("markdownEditor") });
+    </script>
+}

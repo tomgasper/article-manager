@@ -4,6 +4,14 @@
     ViewData["Title"] = "Full Page";
 }
 
+<div class="text-end">
+    <a asp-controller="Article" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+        Edit
+    </a>
+    <a asp-controller="Article" asp-action="Download" asp-route-id="@Model.Id" class="btn btn-primary">
+        Download
+    </a>  
+</div>
 <div class="text-center">
     <h1 class="display-3">@Model.Name</h1>
     <p class="display-6">@Model.Author</p>

@@ -13,9 +13,9 @@ namespace ArticleManager.Controllers
 {
     public class ArticlesController : Controller
     {
-        private readonly ArticleManagerContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public ArticlesController(ArticleManagerContext context)
+        public ArticlesController(ApplicationDbContext context)
         {
             _context = context;
         }
