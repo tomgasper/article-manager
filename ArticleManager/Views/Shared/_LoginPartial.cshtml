@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using ArticleManager.Areas.Identity.Data;
 
-@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<ArticleManagerUser> SignInManager
+@inject UserManager<ArticleManagerUser> UserManager
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
