@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace ArticleManager.Models
@@ -12,6 +13,7 @@ namespace ArticleManager.Models
         public int Upvotes { get; set; }
 
         [DataType(DataType.MultilineText)]
+        [DisplayName("Content")]
         public string? ContentMarkdown { get; set; }
     }
 }

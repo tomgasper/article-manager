@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 using ArticleManager.Areas.Identity.Data;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ArticleManager.Controllers
 {
@@ -18,25 +20,23 @@ namespace ArticleManager.Controllers
             _userManager = userManager;
         }
 
+
         public async Task<IActionResult> Index()
         {
-            var user = await _userManager.FindByEmailAsync(User.Identity.Name);
-
-			if (user != null)
-			{
-				var claims = await _userManager.GetClaimsAsync(user);
-
-				ViewData["UserName"] = user.UserName;
-				ViewData["Email"] = user.Email;
-				ViewData["Claims"] = claims;
-			}
-
-			return View();
-        }
-
-        public IActionResult Privacy()
+        if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            return View();
+            var user = await _userManager.FindByEmailAsync(User.Identity.Name);
+                if (user != null)
+                {
+                    ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+                    var claims = claimsIdentity?.Claims;
+
+                    ViewData["UserName"] = user.UserName;
+                    ViewData["Email"] = user.Email;
+                    ViewData["Claims"] = claims;
+                }
+        }       
+        return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

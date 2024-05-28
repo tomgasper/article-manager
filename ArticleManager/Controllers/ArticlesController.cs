@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using ArticleManager.Data;
 using ArticleManager.Models;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace ArticleManager.Controllers
 {
@@ -47,20 +49,21 @@ namespace ArticleManager.Controllers
         }
 
         // GET: Articles/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Articles/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Author,CreatedAt,Upvotes")] Article article)
+        [Authorize]
+        public async Task<IActionResult> Create([Bind("Id,Name,Author,ContentMarkdown")] Article article)
         {
             if (ModelState.IsValid)
             {
+                article.CreatedAt = DateTime.Now;
+                article.Author = User.Identity.Name;
                 _context.Add(article);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

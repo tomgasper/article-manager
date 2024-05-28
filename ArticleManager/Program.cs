@@ -9,12 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContext") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.")));
 
-/*
-builder.Services.AddDefaultIdentity<ArticleManagerUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-*/
-
 builder.Services.AddIdentity<ArticleManagerUser, ArticleManagerRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultUI()
@@ -63,6 +57,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ArticleManagerUser>, CustomClaimsPrincipleFactory>();
 
 var app = builder.Build();
 
