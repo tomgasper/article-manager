@@ -56,9 +56,15 @@ namespace ArticleManager.Controllers
 
         // POST: Edit
         [HttpPost]
-        public async Task<IActionResult> Edit(int? id, [Bind("Id, Name, Author, Upvotes,ContentMarkdown")]Article article)
+        public async Task<IActionResult> Edit(int? id, [Bind("Id, Name")]Article article)
         {
             if (id != article.Id)
+            {
+                return NotFound();
+            }
+
+            var existingArticle = await _context.Article.FindAsync(id);
+            if (existingArticle == null)
             {
                 return NotFound();
             }
@@ -67,7 +73,9 @@ namespace ArticleManager.Controllers
             {
                 try
                 {
-                    _context.Update(article);
+                    existingArticle.Name = article.Name;
+
+                    _context.Update(existingArticle);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -86,7 +94,7 @@ namespace ArticleManager.Controllers
             return View(article);
         }
 
-        // GET: Dpwmload
+        // GET: Download
         public async Task<IActionResult> Download(int? id)
         {
             if (id == null || _context.Article == null)

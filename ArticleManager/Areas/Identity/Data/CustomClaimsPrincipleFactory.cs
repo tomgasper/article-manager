@@ -19,7 +19,6 @@ namespace ArticleManager.Areas.Identity.Data
             var identity = await base.GenerateClaimsAsync(user);
 
             identity.AddClaim(new Claim(ClaimTypes.Name, user.Name ?? "" ));
-            identity.AddClaim(new Claim(ClaimTypes.DateOfBirth, user.DOB.ToString("yyyy-MM-dd")));
 
             var roles = await UserManager.GetRolesAsync(user);
 

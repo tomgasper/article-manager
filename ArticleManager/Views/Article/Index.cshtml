@@ -1,13 +1,21 @@
-﻿@model ArticleManager.Models.Article
+﻿@using Microsoft.AspNetCore.Identity;
+@using ArticleManager.Areas.Identity.Data;
+
+@inject UserManager<ArticleManagerUser> UserManager;
+
+@model ArticleManager.Models.Article
 
 @{
     ViewData["Title"] = "Full Page";
 }
 
 <div class="text-end">
-    <a asp-controller="Article" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-        Edit
-    </a>
+    @if (User.Identity.IsAuthenticated && UserManager.GetUserName(User) == Model.Author)
+    {
+        <a asp-controller="Article" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            Edit
+        </a>
+    }
     <a asp-controller="Article" asp-action="Download" asp-route-id="@Model.Id" class="btn btn-primary">
         Download
     </a>  

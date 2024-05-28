@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ArticleManager.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ArticleManager.Areas.Identity.Data
 {
@@ -6,9 +7,7 @@ namespace ArticleManager.Areas.Identity.Data
     {
         [PersonalData]
         public string? Name { get; set; }
-        [PersonalData]
-        public DateTime DOB { get; set; }
 
-        public virtual ICollection<IdentityUserClaim<Guid>> Claims { get; set; }
+        public ICollection<UserVotes> UserVotes { get; } = new List<UserVotes>();
     }
 }

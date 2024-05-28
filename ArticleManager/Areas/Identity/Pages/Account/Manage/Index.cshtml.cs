@@ -45,10 +45,6 @@ namespace ArticleManager.Areas.Identity.Pages.Account.Manage
             [Display(Name = "Full name")]
             public string Name { get; set; }
 
-            [Required]
-            [Display(Name = "Birth Date")]
-            [DataType(DataType.Date)]
-            public DateTime DOB { get; set; }
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
@@ -63,7 +59,6 @@ namespace ArticleManager.Areas.Identity.Pages.Account.Manage
             {
                 Username = userName,
                 Name = user.Name,
-                DOB = user.DOB,
                 PhoneNumber = phoneNumber
             };
         }
@@ -108,11 +103,6 @@ namespace ArticleManager.Areas.Identity.Pages.Account.Manage
             if (Input.Name != user.Name)
             {
                 user.Name = Input.Name;
-            }
-
-            if (Input.DOB != user.DOB)
-            {
-                user.DOB = Input.DOB;
             }
 
             await _userManager.UpdateAsync(user);

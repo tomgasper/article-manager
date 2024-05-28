@@ -20,6 +20,7 @@ namespace ArticleManager.Data
         }
 
         public DbSet<ArticleManager.Models.Article> Article { get; set; } = default!;
+        public DbSet<ArticleManager.Models.UserVotes> UserVotes { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,37 +33,44 @@ namespace ArticleManager.Data
                 entity.ToTable(name: "Users");
             });
 
-            builder.Entity<ArticleManagerUser>(b =>
+            builder.Entity<ArticleManagerRole>(entity =>
             {
-                b.HasMany(e => e.Claims)
-                .WithOne()
-                .HasForeignKey(uc => uc.UserId)
-                .IsRequired();
-            });
-
-            builder.Entity<IdentityRole>(entity => {
                 entity.ToTable(name: "Roles");
             });
 
 
-            builder.Entity<IdentityUserRole<Guid>>(entity => {
-                entity.ToTable("UserRoles");
+            builder.Entity<UserVotes>()
+                .HasKey(uv => new { uv.Id });
+
+            builder.Entity<UserVotes>()
+                .HasOne(uv => uv.Article)
+                .WithMany(a => a.UserVotes)
+                .HasForeignKey(uv => uv.ArticleId);
+
+            builder.Entity<UserVotes>()
+                .HasOne(uv => uv.User)
+                .WithMany(u => u.UserVotes)
+                .HasForeignKey(uv => uv.UserId);
+
+
+            builder.Entity<IdentityRole>(entity => {
+                entity.ToTable(name:"UserRoles");
             });
 
-            builder.Entity<IdentityUserClaim<Guid>>(entity => {
-                entity.ToTable("UserClaims");
+            builder.Entity<IdentityRole>(entity => {
+                entity.ToTable(name:"UserClaims");
             });
 
-            builder.Entity<IdentityUserLogin<Guid>>(entity => {
-                entity.ToTable("UserLogins");
+            builder.Entity<IdentityRole>(entity => {
+                entity.ToTable(name: "UserLogins");
             });
 
-            builder.Entity<IdentityRoleClaim<Guid>>(entity => {
-                entity.ToTable("RoleClaims");
+            builder.Entity<IdentityRole> (entity => {
+                entity.ToTable(name:"RoleClaims");
             });
 
-            builder.Entity<IdentityUserToken<Guid>>(entity => {
-                entity.ToTable("UserTokens");
+            builder.Entity<IdentityRole>(entity => {
+                entity.ToTable(name: "UserTokens");
             });
         }
     }

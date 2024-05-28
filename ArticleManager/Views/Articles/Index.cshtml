@@ -1,4 +1,8 @@
-﻿@model IEnumerable<ArticleManager.Models.Article>
+﻿@using Microsoft.AspNetCore.Identity
+@using ArticleManager.Areas.Identity.Data
+
+@model IEnumerable<ArticleManager.Models.Article>
+@inject UserManager<ArticleManagerUser> UserManager
 
 @{
     ViewData["Title"] = "Index";
@@ -7,7 +11,7 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
 <table class="table">
     <thead>
@@ -22,7 +26,7 @@
                 @Html.DisplayNameFor(model => model.CreatedAt)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Upvotes)
+                @Html.DisplayNameFor(model => model.UserVotes)
             </th>
             <th>
                 Options
@@ -44,16 +48,25 @@
                 @Html.DisplayFor(modelItem => item.CreatedAt)
             </td>
             <td>
-                <form asp-action="Upvote" asp-route-id="@item.Id">
+                @if (User.Identity.IsAuthenticated && UserManager.GetUserName(User) != item.Author)
+                {
+                    <form asp-action="Upvote" asp-route-id="@item.Id">
                         <button type="submit" class="btn btn-success btn-sm">+</button>
-                </form>
-                @Html.DisplayFor(modelItem => item.Upvotes)
+                    </form>
+                }
+                @Html.DisplayFor(modelItem => item.UserVotes.Count)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                <a asp-action="Index" asp-controller="Home">Home</a>
+                @if (User.Identity.IsAuthenticated && UserManager.GetUserName(User) == item.Author)
+                {
+                        <a asp-controller="Article" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+
+                } else
+                {
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                }
             </td>
         </tr>
 }

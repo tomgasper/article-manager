@@ -10,23 +10,28 @@ using ArticleManager.Models;
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+
+using ArticleManager.Areas.Identity.Data;
 
 namespace ArticleManager.Controllers
 {
     public class ArticlesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ArticleManagerUser> _userManager;
 
-        public ArticlesController(ApplicationDbContext context)
+        public ArticlesController(ApplicationDbContext context, UserManager<ArticleManagerUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Articles
         public async Task<IActionResult> Index()
         {
               return _context.Article != null ? 
-                          View(await _context.Article.ToListAsync()) :
+                          View(await _context.Article.Include( a => a.UserVotes).ToListAsync()) :
                           Problem("Entity set 'ArticleManagerContext.Article'  is null.");
         }
 
@@ -38,7 +43,7 @@ namespace ArticleManager.Controllers
                 return NotFound();
             }
 
-            var article = await _context.Article
+            var article = await _context.Article.Include(a => a.UserVotes)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (article == null)
             {
@@ -71,6 +76,7 @@ namespace ArticleManager.Controllers
             return View(article);
         }
 
+        [Authorize]
         // GET: Articles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -104,41 +110,7 @@ namespace ArticleManager.Controllers
             return View(article);
         }
 
-        // POST: Articles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Author,CreatedAt,Upvotes")] Article article)
-        {
-            if (id != article.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(article);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ArticleExists(article.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(article);
-        }
-
+        [Authorize]
         // GET: Articles/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -147,17 +119,25 @@ namespace ArticleManager.Controllers
                 return NotFound();
             }
 
-            var article = await _context.Article
+            var article = await _context.Article.Include( a => a.UserVotes )
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (article == null)
             {
                 return NotFound();
+            } else
+            {
+                if (_userManager.GetUserName(User) != article.Author)
+                {
+                    return LocalRedirect("/Identity/Account/AccessDenied");
+                }
             }
 
             return View(article);
         }
 
         // POST: Articles/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -167,15 +147,24 @@ namespace ArticleManager.Controllers
                 return Problem("Entity set 'ArticleManagerContext.Article'  is null.");
             }
             var article = await _context.Article.FindAsync(id);
+
             if (article != null)
             {
-                _context.Article.Remove(article);
+                if (_userManager.GetUserName(User) == article.Author)
+                {
+                    _context.Article.Remove(article);
+                }
+                else
+                {
+                    return LocalRedirect("/Identity/Account/AccessDenied");
+                }
             }
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
 
@@ -186,36 +175,65 @@ namespace ArticleManager.Controllers
                 return NotFound();
             }
 
-            var article = await _context.Article.FirstOrDefaultAsync(m => m.Id == id);
+            var article = await _context.Article.Include( a => a.UserVotes).FirstOrDefaultAsync(m => m.Id == id);
             if (article == null)
             {
                 return NotFound();
             }
 
-            article.Upvotes++;
+            //article.Upvotes++;
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Don't allow multiple upvotes from the same user
+
+                    bool alreadyUpvoted = false;
+                    string userIdString = _userManager.GetUserId(User);
+                    Guid currUserId;
+
+                    if (!Guid.TryParse(userIdString, out currUserId))
+                    {
+                        ModelState.AddModelError("", "Invalid user ID.");
+                    }
+
+                    foreach (UserVotes pairs in article.UserVotes)
+                    {
+                        if (pairs.UserId == currUserId)
+                        {
+                            alreadyUpvoted = true;
+                            break;
+                        }
+                    }
+
+                    if (!alreadyUpvoted && _userManager.GetUserName(User) != article.Author)
+                    {
+                        UserVotes vote = new();
+                        vote.Article = article;
+                        vote.User = await _userManager.GetUserAsync(User);
+                        // Score not needed for this simple upvote implementation
+                        // Needed if the system is exteneded to allow downvotes as well
+                        vote.score = 1;
+
+                        _context.Update(vote);
+                    }
                     _context.Update(article);
                     await _context.SaveChangesAsync();
-                } catch (DBConcurrencyException)
-                {
-                    if (!ArticleExists(article.Id))
+                    } catch (DBConcurrencyException)
                     {
-                        return NotFound();
-                    } else
-                    {
-                        throw;
-                    }
-                }
-            }
+                        if (!ArticleExists(article.Id))
+                        {
+                            return NotFound();
+                        } else
+                        {
+                            throw;
+                        }
+                } }
 
             return RedirectToAction(nameof(Index));
         }
           
-
         private bool ArticleExists(int id)
         {
           return (_context.Article?.Any(e => e.Id == id)).GetValueOrDefault();
